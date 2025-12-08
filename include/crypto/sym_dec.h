@@ -25,6 +25,7 @@
 #include <crypto/api.h>
 #include <gnuradio/block.h>
 #include <crypto/sym_ciph_desc.h>
+#include <memory>
 
 namespace gr {
   namespace crypto {
@@ -38,7 +39,7 @@ namespace gr {
     class CRYPTO_API sym_dec : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<sym_dec> sptr;
+      typedef std::shared_ptr<sym_dec> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of crypto::sym_dec.

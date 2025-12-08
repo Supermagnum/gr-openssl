@@ -27,6 +27,7 @@
 #include <openssl/evp.h>
 #include <openssl/conf.h>
 #include <openssl/err.h>
+#include <memory>
 
 namespace gr {
   namespace crypto {
@@ -39,7 +40,7 @@ namespace gr {
     class CRYPTO_API hash : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<hash> sptr;
+      typedef std::shared_ptr<hash> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of crypto::hash.

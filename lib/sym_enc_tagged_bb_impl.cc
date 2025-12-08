@@ -35,9 +35,7 @@ namespace gr {
         sym_enc_tagged_bb::sptr
         sym_enc_tagged_bb::make(sym_ciph_desc &ciph_desc, const std::string &packet_len_key)
         {
-            std::shared_ptr<sym_enc_tagged_bb_impl> ptr = gnuradio::get_initial_sptr
-                    (new sym_enc_tagged_bb_impl(ciph_desc, packet_len_key));
-            return boost::shared_ptr<sym_enc_tagged_bb>(ptr.get(), [ptr](sym_enc_tagged_bb*) mutable { ptr.reset(); });
+            return gnuradio::get_initial_sptr(new sym_enc_tagged_bb_impl(ciph_desc, packet_len_key));
         }
 
         /*

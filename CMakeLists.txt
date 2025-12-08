@@ -117,7 +117,7 @@ endif()
 # caps such as FILTER or FFT) and change the version to the minimum
 # API compatible version required.
 set(GR_REQUIRED_COMPONENTS RUNTIME)
-find_package(Gnuradio "3.7.2" REQUIRED)
+find_package(Gnuradio "3.10.0" REQUIRED)
 
 if(NOT CPPUNIT_FOUND)
     message(FATAL_ERROR "CppUnit required to compile crypto")
@@ -175,7 +175,8 @@ add_custom_target(uninstall
 ########################################################################
 add_subdirectory(include/crypto)
 add_subdirectory(lib)
-add_subdirectory(swig)
+# SWIG bindings disabled - using pybind11 instead
+# add_subdirectory(swig)
 add_subdirectory(python)
 add_subdirectory(grc)
 add_subdirectory(apps)

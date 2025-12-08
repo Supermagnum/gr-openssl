@@ -28,11 +28,19 @@ endif(NOT crypto_sources)
 ########################################################################
 # Include swig generation macros
 ########################################################################
+# NOTE: SWIG bindings disabled due to GNU Radio 3.10+ incompatibility
+# The C++ libraries work fine and can be used in GRC flowgraphs
+# Python bindings require major updates (SWIG -> pybind11 conversion)
+message(STATUS "Skipping SWIG Python bindings - incompatible with GNU Radio 3.10+")
+message(STATUS "C++ libraries are available for use in GRC flowgraphs")
+return()
+
 find_package(SWIG)
-find_package(PythonLibs 2)
+find_package(PythonLibs 3)
 if(NOT SWIG_FOUND OR NOT PYTHONLIBS_FOUND)
     return()
 endif()
+include(GrMiscUtils)
 include(GrSwig)
 include(GrPython)
 

@@ -26,9 +26,7 @@
 #include "hash_impl.h"
 #include <openssl/evp.h>
 #include <openssl/err.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/placeholders.hpp>
+#include <functional>
 
 namespace gr {
     namespace crypto {
@@ -36,9 +34,7 @@ namespace gr {
         hash::sptr
         hash::make(const std::string &hash_name)
         {
-            std::shared_ptr<hash_impl> ptr = gnuradio::get_initial_sptr
-                    (new hash_impl(hash_name));
-            return boost::shared_ptr<hash>(ptr.get(), [ptr](hash*) mutable { ptr.reset(); });
+            return gnuradio::get_initial_sptr(new hash_impl(hash_name));
         }
 
 
@@ -49,7 +45,7 @@ namespace gr {
         {
             message_port_register_out(pmt::mp("pdus"));
             message_port_register_in(pmt::mp("pdus"));
-            set_msg_handler(pmt::mp("pdus"), boost::bind(&hash_impl::msg_handler, this, _1));
+            set_msg_handler(pmt::mp("pdus"), [this](pmt::pmt_t msg) { this->msg_handler(msg); });
 
 
             ERR_load_ERR_strings();

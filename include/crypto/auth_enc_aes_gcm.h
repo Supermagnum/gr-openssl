@@ -24,6 +24,7 @@
 
 #include <crypto/api.h>
 #include <gnuradio/block.h>
+#include <memory>
 
 namespace gr {
   namespace crypto {
@@ -36,7 +37,7 @@ namespace gr {
     class CRYPTO_API auth_enc_aes_gcm : virtual public gr::block
     {
      public:
-      typedef boost::shared_ptr<auth_enc_aes_gcm> sptr;
+      typedef std::shared_ptr<auth_enc_aes_gcm> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of crypto::auth_enc_aes_gcm.

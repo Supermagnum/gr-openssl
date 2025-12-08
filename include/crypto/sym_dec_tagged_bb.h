@@ -25,6 +25,7 @@
 #include <crypto/api.h>
 #include <gnuradio/tagged_stream_block.h>
 #include <crypto/sym_ciph_desc.h>
+#include <memory>
 
 namespace gr {
   namespace crypto {
@@ -38,7 +39,7 @@ namespace gr {
     class CRYPTO_API sym_dec_tagged_bb : virtual public gr::tagged_stream_block
     {
      public:
-      typedef boost::shared_ptr<sym_dec_tagged_bb> sptr;
+      typedef std::shared_ptr<sym_dec_tagged_bb> sptr;
 
       /*!
        * \brief Return a shared_ptr to a new instance of crypto::sym_dec_tagged_bb.

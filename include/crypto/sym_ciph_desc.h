@@ -29,6 +29,7 @@
 #include <openssl/conf.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
+#include <memory>
 
 
 namespace gr {
@@ -43,7 +44,7 @@ namespace gr {
         class CRYPTO_API sym_ciph_desc
         {
         public:
-            typedef boost::shared_ptr<sym_ciph_desc> sptr;
+            typedef std::shared_ptr<sym_ciph_desc> sptr;
 
             sym_ciph_desc(const std::string ciph_name, bool padding, const std::vector<uint8_t> key);
 

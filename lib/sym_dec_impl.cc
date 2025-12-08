@@ -26,9 +26,7 @@
 #include "sym_dec_impl.h"
 #include <openssl/evp.h>
 #include <openssl/err.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/placeholders.hpp>
+#include <functional>
 
 namespace gr {
     namespace crypto {
@@ -36,9 +34,7 @@ namespace gr {
         sym_dec::sptr
         sym_dec::make(sym_ciph_desc &ciph_desc)
         {
-            std::shared_ptr<sym_dec_impl> ptr = gnuradio::get_initial_sptr
-                    (new sym_dec_impl(ciph_desc));
-            return boost::shared_ptr<sym_dec>(ptr.get(), [ptr](sym_dec*) mutable { ptr.reset(); });
+            return gnuradio::get_initial_sptr(new sym_dec_impl(ciph_desc));
         }
 
         /*
@@ -54,7 +50,7 @@ namespace gr {
 
             message_port_register_out(pmt::mp("pdus"));
             message_port_register_in(pmt::mp("pdus"));
-            set_msg_handler(pmt::mp("pdus"), boost::bind(&sym_dec_impl::msg_handler, this, _1));
+            set_msg_handler(pmt::mp("pdus"), [this](pmt::pmt_t msg) { this->msg_handler(msg); });
 
             sym_ciph_desc *desc = &ciph_desc;
             d_ciph = desc->get_evp_ciph();
