@@ -24,6 +24,9 @@
 
 #include <gnuradio/io_signature.h>
 #include "sym_dec_tagged_bb_impl.h"
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +34,9 @@ namespace gr {
         sym_dec_tagged_bb::sptr
         sym_dec_tagged_bb::make(sym_ciph_desc &desc, const std::string &packet_len_tag)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<sym_dec_tagged_bb_impl> ptr = gnuradio::get_initial_sptr
                     (new sym_dec_tagged_bb_impl(desc, packet_len_tag));
+            return boost::shared_ptr<sym_dec_tagged_bb>(ptr.get(), [ptr](sym_dec_tagged_bb*) mutable { ptr.reset(); });
         }
 
         /*
@@ -45,14 +49,14 @@ namespace gr {
         {
             sym_ciph_desc *desc = &ciph_desc;
             d_ciph = desc->get_evp_ciph();
-            d_iv.assign(d_ciph->iv_len, 0);
+            d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
             d_key = desc->get_key();
             d_padding = desc->get_padding();
 
             d_ciph_ctx = EVP_CIPHER_CTX_new();
 
             //initialize decryption if iv is not needed
-            d_have_iv = false || (d_ciph->iv_len == 0);
+            d_have_iv = false || (EVP_CIPHER_get_iv_length(d_ciph) == 0);
             if (d_have_iv) {
                 init_ctx();
             }
@@ -75,14 +79,14 @@ namespace gr {
 
         sym_dec_tagged_bb_impl::~sym_dec_tagged_bb_impl()
         {
-            d_key.assign(d_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_ciph), 0);
             EVP_CIPHER_CTX_free(d_ciph_ctx);
         }
 
         int
         sym_dec_tagged_bb_impl::calculate_output_stream_length(const gr_vector_int &ninput_items)
         {
-            return ninput_items[0] + d_ciph->block_size;
+            return ninput_items[0] + EVP_CIPHER_get_block_size(d_ciph);
         }
 
         int
@@ -101,7 +105,7 @@ namespace gr {
             //new IV
             if (t_iv.size()) {
                 pmt::pmt_t p = t_iv.front().value;
-                if (pmt::is_u8vector(p) && pmt::length(p) == d_ciph->iv_len) {
+                if (pmt::is_u8vector(p) && pmt::length(p) == EVP_CIPHER_get_iv_length(d_ciph)) {
 
                     //final flag was not set before new iv->fails cause cannot prepend old packet data to new packet
                     if(d_have_iv){
@@ -136,7 +140,7 @@ namespace gr {
                     ERR_print_errors_fp(stdout);
                 }
                 nout=nout+tmp;
-                d_have_iv = false || (d_ciph->iv_len == 0);
+                d_have_iv = false || (EVP_CIPHER_get_iv_length(d_ciph) == 0);
             }
 
             //printf("nin: %i, nout: %i, noutput_work: %i\n", ninput_items[0], nout, noutput_items);

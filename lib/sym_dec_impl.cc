@@ -24,6 +24,11 @@
 
 #include <gnuradio/io_signature.h>
 #include "sym_dec_impl.h"
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +36,9 @@ namespace gr {
         sym_dec::sptr
         sym_dec::make(sym_ciph_desc &ciph_desc)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<sym_dec_impl> ptr = gnuradio::get_initial_sptr
                     (new sym_dec_impl(ciph_desc));
+            return boost::shared_ptr<sym_dec>(ptr.get(), [ptr](sym_dec*) mutable { ptr.reset(); });
         }
 
         /*
@@ -52,14 +58,14 @@ namespace gr {
 
             sym_ciph_desc *desc = &ciph_desc;
             d_ciph = desc->get_evp_ciph();
-            d_iv.assign(d_ciph->iv_len, 0);
+            d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
             d_key = desc->get_key();
             d_padding = desc->get_padding();
 
             d_ciph_ctx = EVP_CIPHER_CTX_new();
 
             //initialize decryption if no need for iv
-            d_have_iv = false || (d_ciph->iv_len == 0);
+            d_have_iv = false || (EVP_CIPHER_get_iv_length(d_ciph) == 0);
             if (d_have_iv) {
                 init_ctx();
             }
@@ -94,11 +100,11 @@ namespace gr {
 
             //iv received?
             pmt::pmt_t iv_val = pmt::dict_ref(meta, d_iv_id, pmt::PMT_NIL);
-            if (pmt::is_u8vector(iv_val) && pmt::length(iv_val) == d_ciph->iv_len) {
+            if (pmt::is_u8vector(iv_val) && pmt::length(iv_val) == EVP_CIPHER_get_iv_length(d_ciph)) {
 
                 //final flag was not set before new iv -> output remaining bytes in extra msg, maybe unwanted?
                 if(d_have_iv){
-                    d_out_buffer.reserve(d_ciph->block_size);
+                    d_out_buffer.reserve(EVP_CIPHER_get_block_size(d_ciph));
                     int nout=0;
                     if (1 != EVP_DecryptFinal_ex(d_ciph_ctx, &d_out_buffer[0], &nout)) {
                         ERR_print_errors_fp(stdout);
@@ -121,7 +127,7 @@ namespace gr {
             if (pmt::is_u8vector(data) && pmt::length(data) != 0) {
                 size_t inlen = pmt::length(data);
                 const unsigned char *in = u8vector_elements(data, inlen);
-                d_out_buffer.reserve(inlen + 2*d_ciph->block_size);
+                d_out_buffer.reserve(inlen + 2*EVP_CIPHER_get_block_size(d_ciph));
 
                 if (!d_have_iv) {
                     throw std::runtime_error("ERROR decryption without iv\n");
@@ -141,7 +147,7 @@ namespace gr {
                     }
                     nout+=tmp;
                     //need iv in next msg
-                    d_have_iv = false || (d_ciph->iv_len == 0);
+                    d_have_iv = false || (EVP_CIPHER_get_iv_length(d_ciph) == 0);
                 }
 
                 data = pmt::init_u8vector(nout, d_out_buffer);
@@ -158,7 +164,7 @@ namespace gr {
 
         sym_dec_impl::~sym_dec_impl()
         {
-            d_key.assign(d_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_ciph), 0);
             EVP_CIPHER_CTX_free(d_ciph_ctx);
         }
 

@@ -24,6 +24,12 @@
 
 #include <gnuradio/io_signature.h>
 #include "sym_enc_impl.h"
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +37,9 @@ namespace gr {
         sym_enc::sptr
         sym_enc::make(sym_ciph_desc &ciph_desc)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<sym_enc_impl> ptr = gnuradio::get_initial_sptr
                     (new sym_enc_impl(ciph_desc));
+            return boost::shared_ptr<sym_enc>(ptr.get(), [ptr](sym_enc*) mutable { ptr.reset(); });
         }
 
         /*
@@ -53,7 +60,7 @@ namespace gr {
 
             sym_ciph_desc *desc = &ciph_desc;
             d_ciph = desc->get_evp_ciph();
-            d_iv.assign(d_ciph->iv_len, 0);
+            d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
             d_key = desc->get_key();
             d_padding = desc->get_padding();
 
@@ -64,14 +71,14 @@ namespace gr {
 
         sym_enc_impl::~sym_enc_impl()
         {
-            d_key.assign(d_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_ciph), 0);
             EVP_CIPHER_CTX_free(d_ciph_ctx);
         }
 
         void
         sym_enc_impl::init_ctx(){
             //initialize encryption with random iv
-            if (1 != RAND_bytes(&d_iv[0], d_ciph->iv_len)) {
+            if (1 != RAND_bytes(&d_iv[0], EVP_CIPHER_get_iv_length(d_ciph))) {
                 ERR_print_errors_fp(stdout);
             }
             if (1 != EVP_EncryptInit_ex(d_ciph_ctx, d_ciph, NULL, &d_key[0], &d_iv[0])) {
@@ -105,7 +112,7 @@ namespace gr {
 
                 size_t inlen = pmt::length(data);
                 const unsigned char *in = u8vector_elements(data, inlen);
-                d_out_buffer.reserve(inlen + 2 * d_ciph->block_size);
+                d_out_buffer.reserve(inlen + 2 * EVP_CIPHER_get_block_size(d_ciph));
 
                 //encrypt and finalize if final flag detected
                 int nout = 0;
@@ -117,7 +124,7 @@ namespace gr {
 
                 //add start iv to first packet
                 if (d_pdu_ctr == 0) {
-                    meta = pmt::dict_add(meta, d_iv_id, pmt::init_u8vector(d_ciph->iv_len, &d_iv[0]));
+                    meta = pmt::dict_add(meta, d_iv_id, pmt::init_u8vector(EVP_CIPHER_get_iv_length(d_ciph), &d_iv[0]));
                 }
 
                 d_pdu_ctr++;

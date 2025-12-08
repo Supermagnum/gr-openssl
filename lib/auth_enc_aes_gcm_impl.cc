@@ -24,6 +24,12 @@
 
 #include <gnuradio/io_signature.h>
 #include "auth_enc_aes_gcm_impl.h"
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +37,9 @@ namespace gr {
         auth_enc_aes_gcm::sptr
         auth_enc_aes_gcm::make(std::vector<uint8_t> key, int keylen, int ivlen)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<auth_enc_aes_gcm_impl> ptr = gnuradio::get_initial_sptr
                     (new auth_enc_aes_gcm_impl(key, keylen, ivlen));
+            return boost::shared_ptr<auth_enc_aes_gcm>(ptr.get(), [ptr](auth_enc_aes_gcm*) mutable { ptr.reset(); });
         }
 
 
@@ -67,7 +74,7 @@ namespace gr {
             message_port_register_in(pmt::mp("pdus"));
             set_msg_handler(pmt::mp("pdus"), boost::bind(&auth_enc_aes_gcm_impl::msg_handler, this, _1));
 
-            d_iv.assign(d_ciph->iv_len, 0);
+            d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
             d_ivlen = ivlen;
             d_key = key;
 
@@ -79,7 +86,7 @@ namespace gr {
 
         auth_enc_aes_gcm_impl::~auth_enc_aes_gcm_impl()
         {
-            d_key.assign(d_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_ciph), 0);
             EVP_CIPHER_CTX_free(d_ciph_ctx);
         }
 
@@ -123,7 +130,7 @@ namespace gr {
 
                 size_t inlen = pmt::length(data);
                 const unsigned char *in = u8vector_elements(data, inlen);
-                d_out_buffer.reserve(inlen + d_ciph->block_size);
+                d_out_buffer.reserve(inlen + EVP_CIPHER_get_block_size(d_ciph));
 
                 //encrypt
                 int nout = 0;
@@ -147,7 +154,7 @@ namespace gr {
             //final encryption requested, write tag in meta
             if (pmt::dict_has_key(meta, d_final_id)) {
 
-                d_out_buffer.reserve(d_ciph->block_size);
+                d_out_buffer.reserve(EVP_CIPHER_get_block_size(d_ciph));
                 int nout=0;
                 if(1 != EVP_EncryptFinal_ex(d_ciph_ctx, &d_out_buffer[0], &nout)){
                     ERR_print_errors_fp(stdout);
@@ -179,7 +186,7 @@ namespace gr {
         auth_enc_aes_gcm_impl::init_ctx(){
 
             //generate random iv
-            if (1 != RAND_bytes(&d_iv[0], d_ciph->iv_len)){
+            if (1 != RAND_bytes(&d_iv[0], EVP_CIPHER_get_iv_length(d_ciph))){
                 ERR_print_errors_fp(stdout);
             }
             //initialize encryption

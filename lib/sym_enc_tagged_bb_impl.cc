@@ -24,6 +24,10 @@
 
 #include <gnuradio/io_signature.h>
 #include "sym_enc_tagged_bb_impl.h"
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +35,9 @@ namespace gr {
         sym_enc_tagged_bb::sptr
         sym_enc_tagged_bb::make(sym_ciph_desc &ciph_desc, const std::string &packet_len_key)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<sym_enc_tagged_bb_impl> ptr = gnuradio::get_initial_sptr
                     (new sym_enc_tagged_bb_impl(ciph_desc, packet_len_key));
+            return boost::shared_ptr<sym_enc_tagged_bb>(ptr.get(), [ptr](sym_enc_tagged_bb*) mutable { ptr.reset(); });
         }
 
         /*
@@ -45,7 +50,7 @@ namespace gr {
         {
             sym_ciph_desc *desc = &ciph_desc;
             d_ciph = desc->get_evp_ciph();
-            d_iv.assign(d_ciph->iv_len, 0);
+            d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
             d_key = desc->get_key();
             d_padding = desc->get_padding();
             d_ctr=0;
@@ -65,7 +70,7 @@ namespace gr {
         sym_enc_tagged_bb_impl::init_ctx()
         {
             //random iv
-            if (1 != RAND_bytes(&d_iv[0], d_ciph->iv_len)) {
+            if (1 != RAND_bytes(&d_iv[0], EVP_CIPHER_get_iv_length(d_ciph))) {
                 ERR_print_errors_fp(stdout);
             }
             //initialize encryption
@@ -80,14 +85,14 @@ namespace gr {
 
         sym_enc_tagged_bb_impl::~sym_enc_tagged_bb_impl()
         {
-            d_key.assign(d_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_ciph), 0);
             EVP_CIPHER_CTX_free(d_ciph_ctx);
         }
 
         int
         sym_enc_tagged_bb_impl::calculate_output_stream_length(const gr_vector_int &ninput_items)
         {
-            return ninput_items[0] + d_ciph->block_size;
+            return ninput_items[0] + EVP_CIPHER_get_block_size(d_ciph);
         }
 
         int
@@ -112,7 +117,7 @@ namespace gr {
 
             //transmit iv on first sample
             if (d_ctr==0) {
-                pmt::pmt_t iv_pmt = pmt::init_u8vector(d_ciph->iv_len, d_iv);
+                pmt::pmt_t iv_pmt = pmt::init_u8vector(EVP_CIPHER_get_iv_length(d_ciph), d_iv);
                 add_item_tag(0, nitems_read(0), d_iv_tagkey, iv_pmt);
             }
 

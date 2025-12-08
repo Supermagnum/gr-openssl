@@ -24,6 +24,11 @@
 
 #include <gnuradio/io_signature.h>
 #include "auth_dec_aes_gcm_impl.h"
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 
 namespace gr {
   namespace crypto {
@@ -31,8 +36,9 @@ namespace gr {
     auth_dec_aes_gcm::sptr
     auth_dec_aes_gcm::make(std::vector<uint8_t> key, int keylen, int ivlen)
     {
-      return gnuradio::get_initial_sptr
+      std::shared_ptr<auth_dec_aes_gcm_impl> ptr = gnuradio::get_initial_sptr
         (new auth_dec_aes_gcm_impl(key, keylen, ivlen));
+      return boost::shared_ptr<auth_dec_aes_gcm>(ptr.get(), [ptr](auth_dec_aes_gcm*) mutable { ptr.reset(); });
     }
 
     auth_dec_aes_gcm_impl::auth_dec_aes_gcm_impl(std::vector<uint8_t> key, int keylen, int ivlen)
@@ -66,7 +72,7 @@ namespace gr {
         message_port_register_in(pmt::mp("pdus"));
         set_msg_handler(pmt::mp("pdus"), boost::bind(&auth_dec_aes_gcm_impl::msg_handler, this, _1));
 
-        d_iv.assign(d_ciph->iv_len, 0);
+        d_iv.assign(EVP_CIPHER_get_iv_length(d_ciph), 0);
         d_ivlen = ivlen;
         d_key = key;
 
@@ -97,7 +103,7 @@ namespace gr {
 
         //iv received?
         pmt::pmt_t iv_val = pmt::dict_ref(meta, d_iv_id, pmt::PMT_NIL);
-        if (pmt::is_u8vector(iv_val) && pmt::length(iv_val) == d_ciph->iv_len) {
+        if (pmt::is_u8vector(iv_val) && pmt::length(iv_val) == EVP_CIPHER_get_iv_length(d_ciph)) {
 
             //auth tag not received before new iv -> error
             if(d_have_iv){
@@ -134,7 +140,7 @@ namespace gr {
         if (pmt::is_u8vector(data) && pmt::length(data) != 0) {
             size_t inlen = pmt::length(data);
             const unsigned char *in = u8vector_elements(data, inlen);
-            d_out_buffer.reserve(inlen + 2*d_ciph->block_size);
+            d_out_buffer.reserve(inlen + 2*EVP_CIPHER_get_block_size(d_ciph));
 
             if (!d_have_iv) {
                 throw std::runtime_error("auth_dec_aes_gcm ERROR decryption without iv\n");

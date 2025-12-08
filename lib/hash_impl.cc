@@ -24,6 +24,11 @@
 
 #include <gnuradio/io_signature.h>
 #include "hash_impl.h"
+#include <openssl/evp.h>
+#include <openssl/err.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 
 namespace gr {
     namespace crypto {
@@ -31,8 +36,9 @@ namespace gr {
         hash::sptr
         hash::make(const std::string &hash_name)
         {
-            return gnuradio::get_initial_sptr
+            std::shared_ptr<hash_impl> ptr = gnuradio::get_initial_sptr
                     (new hash_impl(hash_name));
+            return boost::shared_ptr<hash>(ptr.get(), [ptr](hash*) mutable { ptr.reset(); });
         }
 
 
@@ -54,9 +60,9 @@ namespace gr {
             if (d_md == NULL) {
                 throw std::runtime_error("cipher not found\n");
             }
-            printf("loaded hash function: %s, block-size: %i\n", hash_name.c_str(), d_md->block_size);
+            printf("loaded hash function: %s, block-size: %i\n", hash_name.c_str(), EVP_MD_get_block_size(d_md));
 
-            d_md_ctx = EVP_MD_CTX_create();
+            d_md_ctx = EVP_MD_CTX_new();
             if (1 != EVP_DigestInit_ex(d_md_ctx, d_md, NULL)) {
                 ERR_print_errors_fp(stdout);
             }
@@ -66,7 +72,7 @@ namespace gr {
 
         hash_impl::~hash_impl()
         {
-            EVP_MD_CTX_cleanup(d_md_ctx);
+            EVP_MD_CTX_free(d_md_ctx);
         }
 
         void
@@ -92,7 +98,7 @@ namespace gr {
 
                 size_t inlen = pmt::length(data);
                 const unsigned char *in = u8vector_elements(data, inlen);
-                d_out_buffer.reserve(d_md->block_size);
+                d_out_buffer.reserve(EVP_MD_get_block_size(d_md));
 
                 if (1 != EVP_DigestUpdate(d_md_ctx, in, inlen)) {
                     ERR_print_errors_fp(stdout);

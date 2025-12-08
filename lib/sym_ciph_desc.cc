@@ -24,6 +24,7 @@
 
 #include <gnuradio/io_signature.h>
 #include <crypto/sym_ciph_desc.h>
+#include <openssl/evp.h>
 
 
 namespace gr {
@@ -44,7 +45,7 @@ namespace gr {
             }
 
             printf("loaded cipher: %s, iv-length: %i, key-length: %i, block-size: %i\n",
-                   ciph_name.c_str(), d_evp_ciph->iv_len, d_evp_ciph->key_len, d_evp_ciph->block_size);
+                   ciph_name.c_str(), EVP_CIPHER_get_iv_length(d_evp_ciph), EVP_CIPHER_get_key_length(d_evp_ciph), EVP_CIPHER_get_block_size(d_evp_ciph));
 
             d_padding = padding;
             d_key = key;
@@ -54,7 +55,7 @@ namespace gr {
 
         sym_ciph_desc::~sym_ciph_desc()
         {
-            d_key.assign(d_evp_ciph->key_len, 0);
+            d_key.assign(EVP_CIPHER_get_key_length(d_evp_ciph), 0);
         }
 
     } /* namespace crypto */

@@ -27,10 +27,20 @@
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/XmlOutputter.h>
 
-#include <gnuradio/unittests.h>
 #include "qa_crypto.h"
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <string>
+
+static std::string get_unittest_path(const std::string& filename)
+{
+  const char* test_dir = std::getenv("GR_TEST_TMPDIR");
+  if (test_dir) {
+    return std::string(test_dir) + "/" + filename;
+  }
+  return filename;
+}
 
 int
 main (int argc, char **argv)
