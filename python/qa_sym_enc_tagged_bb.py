@@ -36,11 +36,11 @@ class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
     #encrypt, decrypt and compare one block
     def test_001_t (self):
         cipher_name = "aes-128-cbc"
-        key = bytearray("aaaaaaaaaaaaaaaa")
-        plain=bytearray("testesttesttestt")
+        key = bytearray(b"aaaaaaaaaaaaaaaa")
+        plain=bytearray(b"testesttesttestt")
 
-        print "Key:   \t{0}, hex: \t{1}".format(key,binascii.hexlify(key))
-        print "plain: \t{0}, hex: \t{1}".format(plain,binascii.hexlify(plain))
+        print("Key:   \t{0}, hex: \t{1}".format(key,binascii.hexlify(key).decode()))
+        print("plain: \t{0}, hex: \t{1}".format(plain,binascii.hexlify(plain).decode()))
 
         cipher_desc = crypto.sym_ciph_desc(cipher_name, False, key)
         src = blocks.vector_source_b(plain)
@@ -57,8 +57,8 @@ class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
         encrypted = bytearray(snk_enc.data())
         decrypted = bytearray(snk.data())
 
-        print "Encrypted hex: {0}".format(binascii.hexlify(encrypted))
-        print "Decrypted: \t{0}, hex: \t{1}".format(decrypted, binascii.hexlify(decrypted))
+        print("Encrypted hex: {0}".format(binascii.hexlify(encrypted).decode()))
+        print("Decrypted: \t{0}, hex: \t{1}".format(decrypted, binascii.hexlify(decrypted).decode()))
 
         self.assertEqual(plain, decrypted)
 
@@ -67,7 +67,7 @@ class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
     def test_002_t (self):
 
         cipher_name = "aes-256-cbc"
-        key = bytearray("numpy.random.randint(0, 256, 16).tolist()")
+        key = bytearray(numpy.random.randint(0, 256, 32).tolist())  # AES-256 needs 32 byte key
         plain=bytearray(numpy.random.randint(0, 256, 16*10000).tolist())
 
         cipher_desc = crypto.sym_ciph_desc(cipher_name, False, key)

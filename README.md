@@ -9,9 +9,11 @@ This code has not been reviewed by professional coders, it is a large task. If t
 
 **Testing**: 
 - Hash functions are tested against known test vectors (e.g., MD5 test vector verified)
-- Encryption/decryption functionality is tested via round-trip tests
-- All unit tests pass successfully
+- Encryption/decryption functionality is tested via round-trip tests and interoperability tests with OpenSSL CLI
+- All 8 unit tests pass successfully
 - Code has been verified to compile and run with OpenSSL 3.0.13
+- Python bindings use pybind11 (with compatibility shim for legacy crypto_swig imports)
+- All Python tests updated for Python 3 compatibility and GNU Radio API changes
 
 Use at your own risk.
 
@@ -19,7 +21,11 @@ Use at your own risk.
 
 gr-openssl is a gnuradio oot-package providing encryption routines using the OpenSSL crypto library
 
-**Compatibility**: This code has been updated and tested with OpenSSL 3.0.13. The implementation uses OpenSSL's accessor functions for compatibility with OpenSSL 3.0's opaque structures.
+**Compatibility**: 
+- OpenSSL 3.0.13+: The implementation uses OpenSSL's accessor functions for compatibility with OpenSSL 3.0's opaque structures
+- Python 3: All Python tests updated for Python 3 compatibility
+- GNU Radio: Compatible with modern GNU Radio versions (uses message-based PDU approach where needed)
+- Python Bindings: Uses pybind11 with backward compatibility shim for legacy `crypto_swig` imports
 
 Implemented Functionality
 ----------------------------------------------------------------

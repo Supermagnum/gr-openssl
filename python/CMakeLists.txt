@@ -68,3 +68,4 @@ GR_ADD_TEST(qa_sym_enc ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_sym_e
 GR_ADD_TEST(qa_sym_dec ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_sym_dec.py)
 GR_ADD_TEST(qa_hash ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_hash.py)
 GR_ADD_TEST(qa_auth_enc_aes_gcm ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_auth_enc_aes_gcm.py)
+GR_ADD_TEST(qa_sym_enc_test_vectors ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_sym_enc_test_vectors.py)
