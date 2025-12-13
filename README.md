@@ -1,7 +1,9 @@
 gr-openssl
 =========================
 
-**IMPORTANT NOTICE**: This is AI-generated code. The developer has a neurological condition that makes it impossible to use and learn traditional programming. The developer has put in a significant effort. 
+**IMPORTANT NOTICE**: This is AI-generated code. The developer has a neurological condition that makes it impossible to use and learn traditional programming. The developer has put in a significant effort.
+
+This code has not been reviewed by professional coders, it is a large task. If there are tests available in the codebase, please review those and their code. 
 
 **Status**: This code has been tested and verified to work correctly. The implementation uses OpenSSL's well-tested cryptographic functions directly, ensuring correctness. The code has been updated for OpenSSL 3.0 compatibility and all tests pass successfully.
 
