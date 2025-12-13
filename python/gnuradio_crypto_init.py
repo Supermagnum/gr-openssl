@@ -15,15 +15,16 @@ except ImportError:
 try:
     from crypto_python import *
 except ImportError:
-    import sys
     import os
+    import sys
+
     # Try to find the module in common locations
     possible_paths = [
-        '/usr/local/lib/python3/dist-packages',
-        '/usr/lib/python3/dist-packages',
+        "/usr/local/lib/python3/dist-packages",
+        "/usr/lib/python3/dist-packages",
     ]
     for path in possible_paths:
-        if os.path.exists(os.path.join(path, 'crypto_python.so')):
+        if os.path.exists(os.path.join(path, "crypto_python.so")):
             sys.path.insert(0, path)
             break
     try:
@@ -33,4 +34,3 @@ except ImportError:
             "Failed to import crypto_python. "
             "Make sure gr-openssl is built and installed correctly."
         )
-

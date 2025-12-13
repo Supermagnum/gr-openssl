@@ -18,17 +18,17 @@
 
 # The presence of this file turns this directory into a Python package
 
-'''
+"""
 This is the GNU Radio CRYPTO module. Place your Python package
 description here (python/__init__.py).
-'''
+"""
 
 # import swig generated symbols into the crypto namespace
 try:
-	# this might fail if the module is python-only
-	from crypto_swig import *
+    # this might fail if the module is python-only
+    from crypto_swig import *
 except ImportError:
-	pass
+    pass
 
 # import any pure python here
 #

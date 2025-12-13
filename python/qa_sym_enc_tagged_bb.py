@@ -1,46 +1,49 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Copyright 2016 Kristian Maier.
-# 
+#
 # This is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # This software is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this software; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
-from gnuradio import gr, gr_unittest
-from gnuradio import blocks
-import crypto_swig as crypto
 import binascii
+
+import crypto_swig as crypto
 import numpy
+from gnuradio import blocks, gr, gr_unittest
 
-class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
 
-    def setUp (self):
-        self.tb = gr.top_block ()
+class qa_sym_enc_tagged_bb(gr_unittest.TestCase):
 
-    def tearDown (self):
+    def setUp(self):
+        self.tb = gr.top_block()
+
+    def tearDown(self):
         self.tb = None
 
-    #encrypt, decrypt and compare one block
-    def test_001_t (self):
+    # encrypt, decrypt and compare one block
+    def test_001_t(self):
         cipher_name = "aes-128-cbc"
         key = bytearray(b"aaaaaaaaaaaaaaaa")
-        plain=bytearray(b"testesttesttestt")
+        plain = bytearray(b"testesttesttestt")
 
-        print("Key:   \t{0}, hex: \t{1}".format(key,binascii.hexlify(key).decode()))
-        print("plain: \t{0}, hex: \t{1}".format(plain,binascii.hexlify(plain).decode()))
+        print("Key:   \t{0}, hex: \t{1}".format(key, binascii.hexlify(key).decode()))
+        print(
+            "plain: \t{0}, hex: \t{1}".format(plain, binascii.hexlify(plain).decode())
+        )
 
         cipher_desc = crypto.sym_ciph_desc(cipher_name, False, key)
         src = blocks.vector_source_b(plain)
@@ -58,17 +61,22 @@ class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
         decrypted = bytearray(snk.data())
 
         print("Encrypted hex: {0}".format(binascii.hexlify(encrypted).decode()))
-        print("Decrypted: \t{0}, hex: \t{1}".format(decrypted, binascii.hexlify(decrypted).decode()))
+        print(
+            "Decrypted: \t{0}, hex: \t{1}".format(
+                decrypted, binascii.hexlify(decrypted).decode()
+            )
+        )
 
         self.assertEqual(plain, decrypted)
 
-
-    #with more random data
-    def test_002_t (self):
+    # with more random data
+    def test_002_t(self):
 
         cipher_name = "aes-256-cbc"
-        key = bytearray(numpy.random.randint(0, 256, 32).tolist())  # AES-256 needs 32 byte key
-        plain=bytearray(numpy.random.randint(0, 256, 16*10000).tolist())
+        key = bytearray(
+            numpy.random.randint(0, 256, 32).tolist()
+        )  # AES-256 needs 32 byte key
+        plain = bytearray(numpy.random.randint(0, 256, 16 * 10000).tolist())
 
         cipher_desc = crypto.sym_ciph_desc(cipher_name, False, key)
 
@@ -89,6 +97,5 @@ class qa_sym_enc_tagged_bb (gr_unittest.TestCase):
         self.assertEqual(plain, decrypted)
 
 
-
-if __name__ == '__main__':
-    gr_unittest.run(qa_sym_enc_tagged_bb)#, "qa_sym_enc_tagged_bb.xml")
+if __name__ == "__main__":
+    gr_unittest.run(qa_sym_enc_tagged_bb)  # , "qa_sym_enc_tagged_bb.xml")
