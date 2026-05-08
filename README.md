@@ -80,22 +80,22 @@ The **GNU Radio 3.10** tree in this repository is unchanged. The **GNU Radio 4.0
 
 ### Configure, build, test, install
 
-Example install prefix **`/opt/gnuradio4`** (adjust paths to match your GNU Radio 4 install):
+GNU Radio 4 CMake imports **`find_dependency(cpr)`**; **`cprConfig.cmake`** must be on CMake’s search path (**`lib/cmake/cpr/`** under the GR4 install prefix). Typical GCC builds install to **`/opt/gnuradio4-gcc`**. Example using that prefix (`CMAKE_INSTALL_PREFIX` is where **gr-openssl** installs; adjust as needed):
 
 ```bash
 cd gnuradio4
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=/opt/gnuradio4 \
-  -DCMAKE_PREFIX_PATH=/opt/gnuradio4 \
+  -DCMAKE_INSTALL_PREFIX=/opt/gnuradio4-gcc \
+  -DCMAKE_PREFIX_PATH=/opt/gnuradio4-gcc \
   -DCMAKE_CXX_COMPILER=g++-14
 cmake --build build -j"$(nproc)"
 cd build && ctest --output-on-failure
 sudo cmake --install .
 ```
 
-If your GNURADIO4 tree also hosts **CPR** (same prefix), pass that prefix in **`CMAKE_PREFIX_PATH`** (examples: `/opt/gnuradio4`, `/opt/gnuradio4-gcc`).
+Prefer **`CMAKE_PREFIX_PATH=/opt/gnuradio4-gcc`** unless **`/opt/gnuradio4`** is a symlink to that tree (**`sudo ln -s /opt/gnuradio4-gcc /opt/gnuradio4`** when the path is free).
 
-If `find_package(gnuradio4)` fails, set **`CMAKE_PREFIX_PATH`** to the directory that contains `lib/cmake/gnuradio4/` (and **cpr**, if elsewhere). You can also set **`gnuradio4_DIR`** explicitly.
+If `find_package(gnuradio4)` fails, set **`CMAKE_PREFIX_PATH`** to the directory that contains **`lib/cmake/gnuradio4/`** and **`lib/cmake/cpr/`**. You can also set **`gnuradio4_DIR`** **`cpr_DIR`** explicitly if they are split.
 
 ### Using the installed package
 
