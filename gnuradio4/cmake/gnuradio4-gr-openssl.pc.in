@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: gnuradio4-gr-openssl
+Description: GNU Radio 4.0 OpenSSL cryptographic blocks (gr-openssl4)
+Version: @PROJECT_VERSION@
+Requires: openssl gnuradio4
+Cflags: -I${includedir}
