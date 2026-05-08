@@ -27,6 +27,17 @@ gr-openssl is a gnuradio oot-package providing encryption routines using the Ope
 - GNU Radio: Compatible with modern GNU Radio versions (uses message-based PDU approach where needed)
 - Python Bindings: Uses pybind11 with backward compatibility shim for legacy `crypto_swig` imports
 
+### GNU Radio 4.0
+
+For **GNU Radio 4**, switch to branch **`gnuradio4`**. The port lives only under **`gnuradio4/`** (blocks in namespace **`gnuradio4::openssl`**, **`find_package(gr-openssl4)`**, target **`gnuradio4::gr-openssl`**). This **`master`** branch remains the **3.10** tree.
+
+```bash
+git fetch origin gnuradio4
+git checkout gnuradio4
+```
+
+See **`README.md` on branch `gnuradio4`** (heading *GNU Radio 4.0 (gr-openssl4)*) for blocks, **`CMAKE_PREFIX_PATH`** (often **`/opt/gnuradio4-gcc`**), and **CPR** notes.
+
 Implemented Functionality
 ----------------------------------------------------------------
 ###Symmetric Encryption
