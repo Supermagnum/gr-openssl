@@ -1,0 +1,18 @@
+---
+id: gr-openssl
+name: gr-openssl
+category: '[OpenSSL]'
+description: OpenSSL symmetric encryption, hashing, and AES-GCM for GNU Radio
+
+'[OpenSSL]':
+- Symmetric:
+  - crypto_sym_ciph_desc
+  - crypto_sym_enc
+  - crypto_sym_dec
+  - crypto_sym_enc_tagged_bb
+  - crypto_sym_dec_tagged_bb
+- Hash:
+  - crypto_hash
+- Authenticated:
+  - crypto_auth_enc_aes_gcm
+  - crypto_auth_dec_aes_gcm

@@ -1,0 +1,29 @@
+id: crypto_sym_enc_tagged_bb
+label: Symmetric Encryption Tagged Stream
+category: '[OpenSSL]'
+flags: [ python ]
+
+parameters:
+-   id: cipher
+    label: cipher definition
+    dtype: raw
+-   id: key_len
+    label: packet length key
+    dtype: string
+    default: packet_len
+
+inputs:
+-   domain: stream
+    dtype: byte
+    id: in
+
+outputs:
+-   domain: stream
+    dtype: byte
+    id: out
+
+templates:
+    imports: import crypto
+    make: crypto.sym_enc_tagged_bb(${cipher}, ${key_len})
+
+file_format: 1

@@ -16,6 +16,22 @@
 # along with GNU Radio; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
+
+# GNU Radio 3.10+ Companion loads .block.yml only (not legacy .xml).
+install(FILES
+    crypto.tree.yml
+    crypto_sym_ciph_desc.block.yml
+    crypto_sym_enc.block.yml
+    crypto_sym_dec.block.yml
+    crypto_sym_enc_tagged_bb.block.yml
+    crypto_sym_dec_tagged_bb.block.yml
+    crypto_hash.block.yml
+    crypto_auth_enc_aes_gcm.block.yml
+    crypto_auth_dec_aes_gcm.block.yml
+    DESTINATION share/gnuradio/grc/blocks
+)
+
+# Legacy XML retained for reference; not used by GR 3.10 QtGRC.
 install(FILES
     crypto_sym_ciph_desc.xml
     crypto_sym_enc_tagged_bb.xml
@@ -23,6 +39,7 @@ install(FILES
     crypto_sym_enc.xml
     crypto_sym_dec.xml
     crypto_hash.xml
-    crypto_auth_enc_aes_gcm.xml 
-    crypto_auth_dec_aes_gcm.xml DESTINATION share/gnuradio/grc/blocks
+    crypto_auth_enc_aes_gcm.xml
+    crypto_auth_dec_aes_gcm.xml
+    DESTINATION share/gnuradio/grc/blocks
 )

@@ -20,6 +20,7 @@
 ########################################################################
 # Python bindings using pybind11
 ########################################################################
+include(GrPython)
 # Extension module ABI must match GNU Radio's interpreter (not a random
 # Python3 from PATH, e.g. Miniforge vs /usr/bin/python3).
 if(PYTHON_EXECUTABLE)
@@ -62,14 +63,18 @@ target_link_libraries(crypto_python PRIVATE
     gnuradio-pmt
 )
 
-# Install Python module
+# Install Python bindings into GNU Radio's site-packages (import crypto in GRC).
 install(TARGETS crypto_python
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages
+    LIBRARY DESTINATION ${GR_PYTHON_DIR}/crypto
 )
 
-# Install Python wrapper module to gnuradio package
 install(FILES gnuradio_crypto_init.py
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages/gnuradio
+    DESTINATION ${GR_PYTHON_DIR}/crypto
+    RENAME __init__.py
+)
+
+install(FILES gnuradio_crypto_init.py
+    DESTINATION ${GR_PYTHON_DIR}/gnuradio
     RENAME crypto.py
 )
 
