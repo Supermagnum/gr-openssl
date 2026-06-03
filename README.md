@@ -3,100 +3,33 @@ gr-openssl
 
 **IMPORTANT NOTICE**: This is AI-generated code. The developer has a neurological condition that makes it impossible to use and learn traditional programming. The developer has put in a significant effort. This code might not work properly. Use at your own risk.
 
-This code has not been reviewed by professional coders, it is a large task. If there are tests available in the codebase, please review those and their code. 
+This code has not been reviewed by professional coders, it is a large task. If there are tests available in the codebase, please review those and their code.
 
-**Status**: This code has been tested and verified to work correctly. The implementation uses OpenSSL's well-tested cryptographic functions directly, ensuring correctness. The GNU Radio 3.10 tree requires **OpenSSL 3.0 or newer**; legacy initialization (`ERR_load_*`, `OpenSSL_add_all_*`, `OPENSSL_config`) has been removed because OpenSSL 3 auto-loads algorithms and error strings.
+**Status**: This branch (**gnuradio4**) is the **GNU Radio 4.0** port. It also contains the legacy GNU Radio 3.10 tree for reference; for GR 3.10-only work, prefer branch **`master`**.
 
-**Testing** (last verified **2026-06-03**):
-- Hash functions are tested against known test vectors (e.g., MD5 test vector verified)
-- Encryption/decryption functionality is tested via round-trip tests and interoperability tests with OpenSSL CLI
-- All **8/8** CTest targets pass (`ctest --output-on-failure`, total time ~1.7 s)
-- Clean Release build succeeds with **OpenSSL 3.0.13** (CMake `find_package(OpenSSL 3.0)`), linking via **`OpenSSL::Crypto`**
-- Python bindings use pybind11 (with compatibility shim for legacy crypto_swig imports)
-- All Python tests updated for Python 3 compatibility and GNU Radio API changes
-
-See [TEST_VERIFICATION.md](TEST_VERIFICATION.md) for per-test descriptions and the latest run log.
+**OpenSSL 3.0+** is required on both trees. GR 4 tests: **7/7** Boost.UT pass under `gnuradio4/build` (see [TEST_VERIFICATION.md](TEST_VERIFICATION.md)).
 
 ---
 
-gr-openssl is a gnuradio oot-package providing encryption routines using the OpenSSL crypto library
+## GNU Radio 4.0 (gr-openssl4) — primary on this branch
 
-**Compatibility**: 
-- **OpenSSL 3.0+** (required at configure time): EVP accessor APIs for opaque structures; no OpenSSL 1.1.x support
-- **CMake 3.5+**
-- Python 3: All Python tests updated for Python 3 compatibility
-- GNU Radio 3.10+: Compatible with modern GNU Radio versions (uses message-based PDU approach where needed)
-- Python Bindings: Uses pybind11 with backward compatibility shim for legacy `crypto_swig` imports
+Header-only blocks under `gnuradio4/`, CMake package **`gr-openssl4`**, imported target **`gnuradio4::gr-openssl`**, **`gnuradio4-gr-openssl.pc`**.
 
-### GNU Radio 3.10 — configure, build, test
+**Blocks** (`gnuradio4::openssl`): `SymEnc`, `SymDec`, `SymEncTaggedBb`, `SymDecTaggedBb`, `Hash`, `AuthEncAesGcm`, `AuthDecAesGcm`.
 
-```bash
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-cmake --build . -j"$(nproc)"
-ctest --output-on-failure
-```
+Include `#include <gnuradio-4.0/openssl.hpp>` or headers under `gnuradio-4.0/openssl/`.
 
-Requires development packages for OpenSSL 3, Boost, GNU Radio 3.10, and CppUnit.
+**PDU fields:** `pdu_data`, `iv`, `final`, `aad`, `auth_tag`, `auth_ok` (see headers). Tagged-stream blocks use `length_tag_key` (default `packet_len`) plus tags `iv` and `final`.
 
-For **GNU Radio 3.10 only**, use branch **`master`**. This **`gnuradio4`** branch adds the GR 4.0 port under **`gnuradio4/`** (see below).
-
-Implemented Functionality
-----------------------------------------------------------------
-###Symmetric Encryption
-Symmetric encryption uses the same keys for encryption and decryption. These keys have to be known at the
-transmitter and receiver side for correct operation. OpenSSL provides various encryption ciphers which can 
-be used here, like the well known AES (Advanced Encryption Standard) cipher.
-
-Available ciphers with different key configuratons: **AES, Blowfish, Camellia, CAST, DES, RC4, RC2, SEED**  
-(depending on your openssl version/configuration) 
-
-Available modes of operation: **ECB, CBC, OFB, CFB and CTR.**  
-For more background info, see wikipedia.
-    
-The implementation operates with byte PDU (packet data unit) messages or tagged stream blocks from GNU Radio.
-For correct decryption its necessary to have the correct initialization vector(IV) at receiver side. The 
-encryption blocks generates these (random) IVs and outputs them coupled with the first encrypted data. The 
-message blocks therefore puts the IV in the metadata field of the first generated PDU, the tagged stream block as
-a tag on the first output sample.  
-The encryption can be reseted by inserting an "final" pmt in the metadata field of
- the PDU, respectively as a tag on a sample within a tagged stream packet. Then a new IV is generated.
-    
-###Hash Functions / Message Digests
-The hash function block operates on PDU messages and calculates the desired hash.  
-Available hash functions: **MD4, MD5, ripemd160, sha, sha1, sha224, sha256, sha384, sha512, whirlpool**
-
-###Key Generation
-The necessary keys for symmetric encryption can be randomly generated or derived from a password. This implementation
-uses PBKDF2 (Password-Based Key Derivation Function 2) provided by OpenSSL.
-
-
-Planned functionality
--------------------------------------------------------------
-###asymmetric encryption 
-###message signing and verifying
-
----
-
-## GNU Radio 4.0 (gr-openssl4)
-
-The **GNU Radio 3.10** tree in this repository is unchanged. The **GNU Radio 4.0** port lives only under `gnuradio4/`: header-only blocks, CMake package `gr-openssl4`, imported target **`gnuradio4::gr-openssl`**, and **`gnuradio4-gr-openssl.pc`**.
-
-**Blocks (namespace `gnuradio4::openssl`):** `SymEnc`, `SymDec`, `SymEncTaggedBb`, `SymDecTaggedBb`, `Hash`, `AuthEncAesGcm`, `AuthDecAesGcm`. Include the umbrella header `#include <gnuradio-4.0/openssl.hpp>` or individual headers under `gnuradio-4.0/openssl/`.
-
-**PDU message fields (property maps):** payload bytes use key **`pdu_data`** (`gr::Tensor<std::uint8_t>`). Symmetric PDU flow uses **`iv`**, **`final`** (bool), and optional metadata as in the GR 3.10 blocks. AES-GCM uses **`aad`** (optional), **`auth_tag`** (16 bytes on encrypt output; verify on decrypt), and **`auth_ok`** (bool on decrypt after verification). Tagged-stream blocks use the configured **`length_tag_key`** (default `packet_len`) plus stream tags **`iv`** and **`final`**.
-
-**Key helpers (no disk I/O):** `gnuradio-4.0/openssl/detail/KeyDerivation.hpp` mirrors the GR 3 `key.cc` PBKDF2 / `RAND_bytes` helpers. There are no GR4 blocks here that write secret material to files, so there is nothing to `chmod 0600` in this OOT; if you add such a block, enforce restricted permissions in tests.
+**Key helpers:** `gnuradio-4.0/openssl/detail/KeyDerivation.hpp` (PBKDF2 / `RAND_bytes`; no disk I/O in-tree).
 
 ### Dependencies
 
-- **GNU Radio 4** installed (and its CMake deps, e.g. **CPR**, per your `gnuradio4` install).
-- **OpenSSL 3** development libraries (`libssl-dev` or equivalent).
-- **C++23** compiler with **`<print>`** support (e.g. **GCC 14+**), matching typical GNU Radio 4 builds.
+- GNU Radio 4 installed (and CMake deps, e.g. **CPR**)
+- OpenSSL 3 development libraries
+- **C++23** with **`<print>`** (e.g. GCC 14+)
 
 ### Configure, build, test, install
-
-GNU Radio 4 CMake imports **`find_dependency(cpr)`**; **`cprConfig.cmake`** must be on CMake’s search path (**`lib/cmake/cpr/`** under the GR4 install prefix). Typical GCC builds install to **`/opt/gnuradio4-gcc`**. Example using that prefix (`CMAKE_INSTALL_PREFIX` is where **gr-openssl** installs; adjust as needed):
 
 ```bash
 cd gnuradio4
@@ -109,11 +42,7 @@ cd build && ctest --output-on-failure
 sudo cmake --install .
 ```
 
-GR4 tests (7 Boost.UT targets) passed on **2026-06-03** with OpenSSL 3.0.13; see [TEST_VERIFICATION.md](TEST_VERIFICATION.md).
-
-Prefer **`CMAKE_PREFIX_PATH=/opt/gnuradio4-gcc`** unless **`/opt/gnuradio4`** is a symlink to that tree (**`sudo ln -s /opt/gnuradio4-gcc /opt/gnuradio4`** when the path is free).
-
-If `find_package(gnuradio4)` fails, set **`CMAKE_PREFIX_PATH`** to the directory that contains **`lib/cmake/gnuradio4/`** and **`lib/cmake/cpr/`**. You can also set **`gnuradio4_DIR`** **`cpr_DIR`** explicitly if they are split.
+Set **`CMAKE_PREFIX_PATH`** to the prefix containing `lib/cmake/gnuradio4/` and `lib/cmake/cpr/`.
 
 ### Using the installed package
 
@@ -122,8 +51,35 @@ find_package(gr-openssl4 REQUIRED CONFIG)
 target_link_libraries(my_target PRIVATE gnuradio4::gr-openssl)
 ```
 
-**pkg-config:** `pkg-config --cflags gnuradio4-gr-openssl` (requires `Requires: openssl gnuradio4` satisfied on your system).
+**pkg-config:** `pkg-config --cflags gnuradio4-gr-openssl`
 
+---
 
+## GNU Radio 3.10 tree (secondary on this branch)
 
+The GR 3.10 OOT at the repository root is maintained on **`master`**. You may build it here for convenience:
 
+```bash
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j"$(nproc)"
+ctest --output-on-failure
+```
+
+For GR 3.10-only development and releases, use **`git checkout master`**.
+
+Implemented Functionality (GR 3.10 blocks)
+----------------------------------------------------------------
+###Symmetric Encryption
+(Same as master — AES, Blowfish, Camellia, CAST, DES, RC4, RC2, SEED; modes ECB, CBC, OFB, CFB, CTR.)
+
+###Hash Functions / Message Digests
+MD4, MD5, ripemd160, sha, sha1, sha224, sha256, sha384, sha512, whirlpool
+
+###Key Generation
+PBKDF2 via OpenSSL
+
+Planned functionality
+-------------------------------------------------------------
+###asymmetric encryption
+###message signing and verifying
