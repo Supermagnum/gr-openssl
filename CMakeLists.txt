@@ -20,7 +20,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 project(gr-crypto CXX C)
 enable_testing()
 
@@ -105,10 +105,14 @@ endif(APPLE)
 ########################################################################
 find_package(CppUnit)
 find_package(Doxygen)
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL 3.0 REQUIRED)
 
 if(NOT OPENSSL_FOUND)
-    message(FATAL_ERROR "OpenSSL required to compile crypto")
+    message(FATAL_ERROR "OpenSSL 3.0 or newer is required to compile crypto")
+endif()
+
+if(OPENSSL_VERSION VERSION_LESS "3.0.0")
+    message(FATAL_ERROR "OpenSSL 3.0 or newer is required (found ${OPENSSL_VERSION})")
 endif()
 
 
