@@ -15,14 +15,26 @@ try:
 except ImportError:
     pass
 
+
+def _add_build_python_paths():
+    """Add likely in-tree build dirs for crypto_python (pybind11 output)."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(here, "..", "build", "python"),
+        os.path.join(here, "..", "..", "build", "python"),
+    ]
+    env_build = os.environ.get("GR_OPENSSL_BUILD_DIR")
+    if env_build:
+        candidates.insert(0, os.path.join(env_build, "python"))
+    for path in candidates:
+        path = os.path.normpath(path)
+        if os.path.isdir(path) and path not in sys.path:
+            sys.path.insert(0, path)
+
+
 # Try to import crypto_python (pybind11 module)
 try:
-    # First try from build directory
-    build_path = os.path.join(os.path.dirname(__file__), "..", "build", "python")
-    if os.path.exists(build_path):
-        if build_path not in sys.path:
-            sys.path.insert(0, build_path)
-
+    _add_build_python_paths()
     import crypto_python
 
     # Import all symbols from crypto_python into this module's namespace
