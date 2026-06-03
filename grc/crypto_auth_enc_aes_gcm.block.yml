@@ -1,0 +1,34 @@
+id: crypto_auth_enc_aes_gcm
+label: Authenticated AES-GCM Encryption
+category: '[OpenSSL]'
+flags: [ python ]
+
+parameters:
+-   id: key
+    label: key
+    dtype: int_vector
+-   id: keylen
+    label: key length
+    dtype: enum
+    options: ['32', '24', '16']
+    option_labels: ['256 bit', '192 bit', '128 bit']
+-   id: ivlen
+    label: iv length
+    dtype: int
+    default: '12'
+
+inputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+outputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+templates:
+    imports: import crypto
+    make: crypto.auth_enc_aes_gcm(${key}, ${keylen}, ${ivlen})
+
+file_format: 1

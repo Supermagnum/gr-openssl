@@ -82,8 +82,9 @@ sudo ldconfig
 
 **Using after install:**
 
-- **GNU Radio Companion:** restart GRC; blocks appear under the crypto category (e.g. `crypto_sym_enc`, `crypto_hash`).
-- **Python flowgraphs:** `from gnuradio import crypto` (requires the install step above).
+- **GNU Radio Companion:** restart GRC after install. Blocks appear under the **OpenSSL** category (GNU Radio 3.10 uses `.block.yml` block definitions). Use the same install prefix as GNU Radio (e.g. both under `/usr/local`); run `gnuradio-companion` from that prefix, not a mismatched system package.
+- **Python flowgraphs / GRC generated code:** `import crypto` (top-level package installed with the module).
+- **Alternative import:** `from gnuradio import crypto` (shim installed as `gnuradio/crypto.py`).
 - **C++ / other CMake projects:** add the install prefix to `CMAKE_PREFIX_PATH` and link against `gnuradio-crypto` (see `cmake/Modules/cryptoConfig.cmake` in the install tree).
 
 **Uninstall** (from `build/`):

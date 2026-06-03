@@ -1,0 +1,27 @@
+id: crypto_sym_ciph_desc
+label: Symmetric Cipher Definition
+category: '[OpenSSL]'
+flags: [ python, show_id ]
+
+parameters:
+-   id: ciph_name
+    label: Cipher
+    dtype: string
+    default: aes-256-cbc
+-   id: padding
+    label: Padding
+    dtype: bool
+    default: 'True'
+-   id: key
+    label: key
+    dtype: int_vector
+
+templates:
+    imports: import crypto
+    make: crypto.sym_ciph_desc('${ciph_name}', ${padding}, ${key})
+
+documentation: |-
+    Defines an OpenSSL cipher for use with crypto_sym_enc / crypto_sym_dec blocks.
+    Set ciph_name to an OpenSSL cipher string (e.g. aes-256-cbc, aes-128-ctr, bf-cbc).
+
+file_format: 1

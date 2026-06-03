@@ -1,0 +1,25 @@
+id: crypto_sym_dec
+label: Symmetric Decryption
+category: '[OpenSSL]'
+flags: [ python ]
+
+parameters:
+-   id: ciph_desc
+    label: cipher definition
+    dtype: raw
+
+inputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+outputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+templates:
+    imports: import crypto
+    make: crypto.sym_dec(${ciph_desc})
+
+file_format: 1

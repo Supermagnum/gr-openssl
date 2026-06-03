@@ -1,0 +1,27 @@
+id: crypto_hash
+label: hash
+category: '[OpenSSL]'
+flags: [ python ]
+
+parameters:
+-   id: hash_name
+    label: Hash
+    dtype: enum
+    options: [md4, md5, ripemd160, sha, sha1, sha224, sha256, sha384, sha512, whirlpool]
+    option_labels: [md4, md5, ripemd160, sha, sha1, sha224, sha256, sha384, sha512, whirlpool]
+
+inputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+outputs:
+-   domain: message
+    id: pdus
+    optional: true
+
+templates:
+    imports: import crypto
+    make: crypto.hash('${hash_name}')
+
+file_format: 1
