@@ -47,11 +47,6 @@ namespace gr {
             message_port_register_in(pmt::mp("pdus"));
             set_msg_handler(pmt::mp("pdus"), [this](pmt::pmt_t msg) { this->msg_handler(msg); });
 
-
-            ERR_load_ERR_strings();
-            OpenSSL_add_all_digests();
-            OPENSSL_config(NULL);
-
             d_md = EVP_get_digestbyname(hash_name.c_str());
             if (d_md == NULL) {
                 throw std::runtime_error("cipher not found\n");

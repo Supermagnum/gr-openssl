@@ -1,5 +1,10 @@
 This is the crypto-write-a-block package meant as a guide to building
-out-of-tree packages. To use the crypto blocks, the Python namespaces
+out-of-tree packages.
+
+Build requires OpenSSL 3.0 or newer (see project README.md and
+TEST_VERIFICATION.md for configure, build, and test instructions).
+
+To use the crypto blocks, the Python namespaces
 is in 'crypto', which is imported as:
 
     import crypto
