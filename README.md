@@ -25,13 +25,19 @@ Include `#include <gnuradio-4.0/openssl.hpp>` or headers under `gnuradio-4.0/ope
 
 ### Dependencies
 
-- GNU Radio 4 installed (and CMake deps, e.g. **CPR**)
-- OpenSSL 3 development libraries
-- **C++23** with **`<print>`** (e.g. GCC 14+)
+- **GNU Radio 4** installed (CMake package `gnuradio4`, plus deps such as **CPR**)
+- **OpenSSL 3** (`libssl-dev` or equivalent)
+- **CMake 3.22+**
+- **C++23** compiler with **`<print>`** (e.g. **GCC 14+** / `g++-14`)
 
-### Configure, build, test, install
+On Debian/Ubuntu you typically install GNU Radio 4 into a prefix (example `/opt/gnuradio4-gcc`) and use that same path for `CMAKE_PREFIX_PATH` when building gr-openssl4.
+
+### Configure, build, test
 
 ```bash
+git clone https://github.com/Supermagnum/gr-openssl.git
+cd gr-openssl
+git checkout gnuradio4
 cd gnuradio4
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=/opt/gnuradio4-gcc \
@@ -39,10 +45,26 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_COMPILER=g++-14
 cmake --build build -j"$(nproc)"
 cd build && ctest --output-on-failure
+```
+
+Set **`CMAKE_PREFIX_PATH`** to the directory that contains `lib/cmake/gnuradio4/` and `lib/cmake/cpr/`. If `find_package(gnuradio4)` fails, set **`gnuradio4_DIR`** and **`cpr_DIR`** explicitly.
+
+### Install (GNU Radio 4.0)
+
+From `gnuradio4/build` after a successful build:
+
+```bash
 sudo cmake --install .
 ```
 
-Set **`CMAKE_PREFIX_PATH`** to the prefix containing `lib/cmake/gnuradio4/` and `lib/cmake/cpr/`.
+This installs (under your `CMAKE_INSTALL_PREFIX`):
+
+| Component | Location |
+|-----------|----------|
+| Headers (`gnuradio-4.0/openssl/...`) | `include/` |
+| CMake package `gr-openssl4` | `lib/cmake/gr-openssl4/` |
+| Imported target | `gnuradio4::gr-openssl` (INTERFACE) |
+| pkg-config file | `lib/pkgconfig/gnuradio4-gr-openssl.pc` |
 
 ### Using the installed package
 
@@ -53,17 +75,20 @@ target_link_libraries(my_target PRIVATE gnuradio4::gr-openssl)
 
 **pkg-config:** `pkg-config --cflags gnuradio4-gr-openssl`
 
+Ensure `CMAKE_PREFIX_PATH` (or `PKG_CONFIG_PATH`) includes your gr-openssl4 install prefix when building downstream applications.
+
 ---
 
 ## GNU Radio 3.10 tree (secondary on this branch)
 
-The GR 3.10 OOT at the repository root is maintained on **`master`**. You may build it here for convenience:
+The GR 3.10 OOT at the repository root is maintained on **`master`**. You may build and install it here for convenience; full **install instructions** are on **`master`** `README.md`.
 
 ```bash
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j"$(nproc)"
 ctest --output-on-failure
+sudo cmake --install .
 ```
 
 For GR 3.10-only development and releases, use **`git checkout master`**.
