@@ -23,16 +23,74 @@ gr-openssl is a gnuradio OOT package providing encryption routines using the Ope
 - **GNU Radio 3.10+**
 - Python 3 (pybind11 bindings)
 
+### Dependencies (GNU Radio 3.10)
+
+Install development packages for your distribution before building. On Debian/Ubuntu:
+
+```bash
+sudo apt install build-essential cmake pkg-config \
+  libssl-dev libboost-dev libboost-filesystem-dev libboost-system-dev \
+  libcppunit-dev python3-dev pybind11-dev \
+  gnuradio-dev
+```
+
+If GNU Radio 3.10 is not packaged for your release, build and install GNU Radio first, then point CMake at it with `-DCMAKE_PREFIX_PATH=/path/to/gr/install`.
+
+You also need **pybind11** (package or CMake fetch). **OpenSSL** must be version 3.0 or newer (`openssl version`).
+
 ### Configure, build, test (GNU Radio 3.10)
 
 ```bash
+git clone https://github.com/Supermagnum/gr-openssl.git
+cd gr-openssl
+git checkout master
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . -j"$(nproc)"
 ctest --output-on-failure
 ```
 
-Requires OpenSSL 3, Boost, GNU Radio 3.10, and CppUnit development packages.
+Optional: install to a custom prefix (default is `/usr/local`):
+
+```bash
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+```
+
+### Install (GNU Radio 3.10)
+
+From the same `build/` directory after a successful build:
+
+```bash
+sudo cmake --install .
+```
+
+If you used a library prefix under `/usr/local`, refresh the linker cache:
+
+```bash
+sudo ldconfig
+```
+
+**Installed components:**
+
+| Component | Typical location (prefix `/usr/local`) |
+|-----------|----------------------------------------|
+| C++ library `libgnuradio-crypto.so` | `lib/` |
+| Block headers | `include/crypto/` |
+| GNU Radio Companion block definitions | `share/gnuradio/grc/blocks/` |
+| Python extension `crypto_python` | `lib/python3/dist-packages/` |
+| GNU Radio Python shim | `lib/python3/dist-packages/gnuradio/crypto.py` |
+
+**Using after install:**
+
+- **GNU Radio Companion:** restart GRC; blocks appear under the crypto category (e.g. `crypto_sym_enc`, `crypto_hash`).
+- **Python flowgraphs:** `from gnuradio import crypto` (requires the install step above).
+- **C++ / other CMake projects:** add the install prefix to `CMAKE_PREFIX_PATH` and link against `gnuradio-crypto` (see `cmake/Modules/cryptoConfig.cmake` in the install tree).
+
+**Uninstall** (from `build/`):
+
+```bash
+sudo cmake --build . --target uninstall
+```
 
 ### GNU Radio 4.0
 
